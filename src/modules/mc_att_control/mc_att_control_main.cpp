@@ -244,8 +244,14 @@ MulticopterAttitudeControl::Run()
 		const Quatf q{v_att.q};
 
 		// Check for new attitude setpoint
+		vehicle_attitude_setpoint_s vehicle_attitude_setpoint;
+		vehicle_attitude_setpoint.q_d[0] = 1.0f;
+		vehicle_attitude_setpoint.q_d[1] = 0.0f;
+		vehicle_attitude_setpoint.q_d[2] = 0.0f;
+		vehicle_attitude_setpoint.q_d[3] = 0.0f;
+
 		if (_vehicle_attitude_setpoint_sub.updated()) {
-			vehicle_attitude_setpoint_s vehicle_attitude_setpoint;
+			// vehicle_attitude_setpoint_s vehicle_attitude_setpoint;
 
 			if (_vehicle_attitude_setpoint_sub.copy(&vehicle_attitude_setpoint)
 			    && (vehicle_attitude_setpoint.timestamp > _last_attitude_setpoint)) {
@@ -305,6 +311,14 @@ MulticopterAttitudeControl::Run()
 		bool run_att_ctrl = _vehicle_control_mode.flag_control_attitude_enabled && (is_hovering || is_tailsitter_transition);
 
 		if (run_att_ctrl) {
+			att_controllerModelClass::ExtU_AttControl_T in_to_controller = {
+				.q = {v_att.q[0], v_att.q[1], v_att.q[2], v_att.q[3]},
+				.q_d = {
+					(float)vehicle_attitude_setpoint.q_d[0],
+					(float)vehicle_attitude_setpoint.q_d[1],
+					(float)vehicle_attitude_setpoint.q_d[2],
+					(float)vehicle_attitude_setpoint.q_d[3]}
+			};
 
 			// Generate the attitude setpoint from stick inputs if we are in Manual/Stabilized mode
 			if (_vehicle_control_mode.flag_control_manual_enabled &&
@@ -320,7 +334,17 @@ MulticopterAttitudeControl::Run()
 				_man_y_input_filter.reset(0.f);
 			}
 
-			Vector3f rates_sp = _attitude_control.update(q);
+			// Vector3f rates_sp = _attitude_control.update(q);
+
+			_att_control.setExternalInputs(&in_to_controller);
+			_att_control.step();
+
+			att_controllerModelClass::ExtY_AttControl_T out_from_controller = _att_control.getExternalOutputs();
+			Vector3f rates_sp = {
+				(float)out_from_controller.rate_sp[0],
+				(float)out_from_controller.rate_sp[1],
+				(float)out_from_controller.rate_sp[2]
+			};
 
 			const hrt_abstime now = hrt_absolute_time();
 			autotune_attitude_control_status_s pid_autotune;
