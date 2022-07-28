@@ -24,7 +24,7 @@ const att_controllerModelClass::ConstP_AttControl_T AttControl_ConstP{
   // Expression: -[100, 0, 0; 0, 100, 0; 0, 0, 100]
   //  Referenced by: '<Root>/K_att'
 
-  { -5.0, -0.0, -0.0, -0.0, -5.0, -0.0, -0.0, -0.0, -10 }
+  { -5.0, -0.0, -0.0, -0.0, -5.0, -0.0, -0.0, -0.0, -5.0 }
 };
 
 //
