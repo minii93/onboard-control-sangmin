@@ -57,6 +57,7 @@
 #include <lib/mathlib/math/filter/AlphaFilter.hpp>
 
 #include <AttitudeControl.hpp>
+#include <AttControl.h>
 
 using namespace time_literals;
 
@@ -155,5 +156,7 @@ private:
 		(ParamFloat<px4::params::MPC_THR_HOVER>)    _param_mpc_thr_hover,       /**< throttle at stationary hover */
 		(ParamInt<px4::params::MPC_THR_CURVE>)      _param_mpc_thr_curve        /**< throttle curve behavior */
 	)
+
+	att_controllerModelClass _att_control;  // Custom controller
 };
 
